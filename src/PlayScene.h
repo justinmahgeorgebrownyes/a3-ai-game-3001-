@@ -9,6 +9,10 @@
 #include "StarShip.h"
 #include "PathNode.h"
 
+#include "Player.h"
+#include "Button.h"
+#include "Label.h"
+
 //new for lab 7.133
 #include "Background.h"
 #include "DecisionTree.h"
@@ -26,6 +30,10 @@ public:
 	virtual void HandleEvents() override;
 	virtual void Start() override;
 private:
+
+	Player* m_pPlayer{};
+	bool m_playerFacingRight{};
+
 	// IMGUI Function
 	void GUI_Function();
 	std::string m_guiTitle;
@@ -66,6 +74,10 @@ private:
 	//decision tree
 	DecisionTree* m_decisionTree;
 
+	// Input Control
+	int m_pCurrentInputType{};
+	void GetPlayerInput();
+	void GetKeyboardInput();
 };
 
 #endif /* defined (__PLAY_SCENE__) */

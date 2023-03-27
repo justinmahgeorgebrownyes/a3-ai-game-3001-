@@ -1,6 +1,8 @@
 #include "PlayScene.h"
 #include "Game.h"
 #include "EventManager.h"
+#include "InputType.h"
+
 #include <windows.h>
 
 // required for IMGUI
@@ -9,6 +11,7 @@
 #include "Renderer.h"
 #include "Util.h"
 #include <fstream>
+//#include "SDL_Nodes/imnodes.h"
 
 PlayScene::PlayScene()
 {
@@ -79,9 +82,193 @@ void PlayScene::HandleEvents()
 	{
 		Game::Instance().ChangeSceneState(SceneState::END);
 	}
+
+	GetPlayerInput();
+
+	GetKeyboardInput();
 }
 
+void PlayScene::GetPlayerInput()
+{
+	switch (m_pCurrentInputType)
+	{
+	case static_cast<int>(InputType::GAME_CONTROLLER):
+	{
+		// handle player movement with GameController
+		if (SDL_NumJoysticks() > 0)
+		{
+			if (EventManager::Instance().GetGameController(0) != nullptr)
+			{
+				constexpr auto dead_zone = 10000;
+				if (EventManager::Instance().GetGameController(0)->STICK_LEFT_HORIZONTAL > dead_zone)
+				{
+					m_pPlayer->SetAnimationState(PlayerAnimationState::PLAYER_RUN_RIGHT);
+					m_playerFacingRight = true;
+				}
+				else if (EventManager::Instance().GetGameController(0)->STICK_LEFT_HORIZONTAL < -dead_zone)
+				{
+					m_pPlayer->SetAnimationState(PlayerAnimationState::PLAYER_RUN_LEFT);
+					m_playerFacingRight = false;
+				}
+				else
+				{
+					if (m_playerFacingRight)
+					{
+						m_pPlayer->SetAnimationState(PlayerAnimationState::PLAYER_IDLE_RIGHT);
+					}
+					else
+					{
+						m_pPlayer->SetAnimationState(PlayerAnimationState::PLAYER_IDLE_LEFT);
+					}
+				}
+			}
+		}
+	}
+	break;
+	case static_cast<int>(InputType::KEYBOARD_MOUSE):
+	{
+		// handle player movement with mouse and keyboard
+		if (EventManager::Instance().IsKeyDown(SDL_SCANCODE_A))
+		{
+			m_pPlayer->SetAnimationState(PlayerAnimationState::PLAYER_RUN_LEFT);
+			m_playerFacingRight = false;
 
+
+			m_pPlayer->GetTransform()->position = m_pPlayer->GetTransform()->position + glm::vec2(-5.0f, 0.0f);
+
+
+		}
+		else if (EventManager::Instance().IsKeyDown(SDL_SCANCODE_D))
+		{
+			m_pPlayer->SetAnimationState(PlayerAnimationState::PLAYER_RUN_RIGHT);
+			m_playerFacingRight = true;
+
+
+			m_pPlayer->GetTransform()->position = m_pPlayer->GetTransform()->position + glm::vec2(5.0f, 0.0f);
+
+
+
+		}
+		else if (EventManager::Instance().IsKeyDown(SDL_SCANCODE_W))
+		{
+			//m_pPlayer->SetAnimationState(PlayerAnimationState::PLAYER_RUN_RIGHT);
+			//m_playerFacingRight = true;
+
+
+			m_pPlayer->GetTransform()->position = m_pPlayer->GetTransform()->position + glm::vec2(0.0f, -5.0f);
+
+
+
+		}
+		else if (EventManager::Instance().IsKeyDown(SDL_SCANCODE_S))
+		{
+			//m_pPlayer->SetAnimationState(PlayerAnimationState::PLAYER_RUN_RIGHT);
+			//m_playerFacingRight = true;
+
+
+			m_pPlayer->GetTransform()->position = m_pPlayer->GetTransform()->position + glm::vec2(0.0f, 5.0f);
+
+
+
+		}
+		else
+		{
+			if (m_playerFacingRight)
+			{
+				m_pPlayer->SetAnimationState(PlayerAnimationState::PLAYER_IDLE_RIGHT);
+			}
+			else
+			{
+				m_pPlayer->SetAnimationState(PlayerAnimationState::PLAYER_IDLE_LEFT);
+			}
+		}
+	}
+	break;
+	case static_cast<int>(InputType::ALL):
+	{
+		if (SDL_NumJoysticks() > 0)
+		{
+			if (EventManager::Instance().GetGameController(0) != nullptr)
+			{
+				constexpr auto dead_zone = 10000;
+				if (EventManager::Instance().GetGameController(0)->STICK_LEFT_HORIZONTAL > dead_zone
+					|| EventManager::Instance().IsKeyDown(SDL_SCANCODE_D))
+				{
+					m_pPlayer->SetAnimationState(PlayerAnimationState::PLAYER_RUN_RIGHT);
+					m_playerFacingRight = true;
+				}
+				else if (EventManager::Instance().GetGameController(0)->STICK_LEFT_HORIZONTAL < -dead_zone
+					|| EventManager::Instance().IsKeyDown(SDL_SCANCODE_A))
+				{
+					m_pPlayer->SetAnimationState(PlayerAnimationState::PLAYER_RUN_LEFT);
+					m_playerFacingRight = false;
+				}
+				else
+				{
+					if (m_playerFacingRight)
+					{
+						m_pPlayer->SetAnimationState(PlayerAnimationState::PLAYER_IDLE_RIGHT);
+					}
+					else
+					{
+						m_pPlayer->SetAnimationState(PlayerAnimationState::PLAYER_IDLE_LEFT);
+					}
+				}
+			}
+		}
+		else if (EventManager::Instance().IsKeyDown(SDL_SCANCODE_A))
+		{
+			m_pPlayer->SetAnimationState(PlayerAnimationState::PLAYER_RUN_LEFT);
+			m_playerFacingRight = false;
+		}
+		else if (EventManager::Instance().IsKeyDown(SDL_SCANCODE_D))
+		{
+			m_pPlayer->SetAnimationState(PlayerAnimationState::PLAYER_RUN_RIGHT);
+			m_playerFacingRight = true;
+		}
+		else
+		{
+			if (m_playerFacingRight)
+			{
+				m_pPlayer->SetAnimationState(PlayerAnimationState::PLAYER_IDLE_RIGHT);
+			}
+			else
+			{
+				m_pPlayer->SetAnimationState(PlayerAnimationState::PLAYER_IDLE_LEFT);
+			}
+		}
+	}
+	break;
+	}
+}
+
+void PlayScene::GetKeyboardInput()
+{
+	if (EventManager::Instance().IsKeyDown(SDL_SCANCODE_ESCAPE))
+	{
+		Game::Instance().Quit();
+	}
+
+	if (EventManager::Instance().IsKeyDown(SDL_SCANCODE_1))
+	{
+		Game::Instance().ChangeSceneState(SceneState::START);
+	}
+
+	if (EventManager::Instance().IsKeyDown(SDL_SCANCODE_2))
+	{
+		Game::Instance().ChangeSceneState(SceneState::PLAY);
+	}
+
+	if (EventManager::Instance().IsKeyDown(SDL_SCANCODE_3))
+	{
+		Game::Instance().ChangeSceneState(SceneState::NODE);
+	}
+
+	if (EventManager::Instance().IsKeyDown(SDL_SCANCODE_4))
+	{
+		Game::Instance().ChangeSceneState(SceneState::END);
+	}
+}
 
 
 void PlayScene::Start()
@@ -99,13 +286,20 @@ void PlayScene::Start()
 	AddChild(m_pBackground, 0);
 
 
+	// Set Input Type
+	m_pCurrentInputType = static_cast<int>(InputType::KEYBOARD_MOUSE);
+
+	m_pPlayer = new Player();
+	AddChild(m_pPlayer);
+	m_playerFacingRight = true;
+
 
 	m_pTarget = new Target();
 	m_pTarget->GetTransform()->position = glm::vec2(500.0f, 300.0f);
 	AddChild(m_pTarget, 2);
 
 	m_pStarShip = new StarShip();
-	m_pStarShip->GetTransform()->position = glm::vec2(400.0f, 40.0f);
+	m_pStarShip->GetTransform()->position = glm::vec2(400.0f, 30.0f);
 	AddChild(m_pStarShip, 2);
 
 	// Add Obstacles
