@@ -171,6 +171,31 @@ void PlayScene::GetPlayerInput()
 
 
 		}
+
+		else if (EventManager::Instance().IsKeyDown(SDL_SCANCODE_H))
+		{
+			//m_pPlayer->SetAnimationState(PlayerAnimationState::PLAYER_RUN_RIGHT);
+			//m_playerFacingRight = true;
+			if (m_isGridEnabled == true) {
+				m_isGridEnabled = false;
+			}
+			else if (m_isGridEnabled == false) {
+				m_isGridEnabled = true;
+			}
+			m_toggleGrid(m_isGridEnabled);
+
+			//m_pPlayer->GetTransform()->position = m_pPlayer->GetTransform()->position + glm::vec2(0.0f, 5.0f);
+
+
+
+		}
+
+		else if (EventManager::Instance().IsKeyDown(SDL_SCANCODE_K))
+		{
+
+
+		}
+
 		else
 		{
 			if (m_playerFacingRight)
@@ -268,6 +293,9 @@ void PlayScene::GetKeyboardInput()
 	{
 		Game::Instance().ChangeSceneState(SceneState::END);
 	}
+	//if (EventManager::Instance().IsKeyDown(SDL_SCANCODE_H)) {
+		
+	//}
 }
 
 
@@ -324,7 +352,7 @@ void PlayScene::Start()
 
 
 	//preload music
-	SoundManager::Instance().Load("../Assets/Audio/Mutara.mp3", "mutara", SoundType::SOUND_MUSIC);
+	SoundManager::Instance().Load("../Assets/Audio/bamboopiano.mp3", "mutara", SoundType::SOUND_MUSIC);
 	SoundManager::Instance().SetMusicVolume(16);
 
 	//play music
